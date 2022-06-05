@@ -1,0 +1,13 @@
+name: AntiVPN
+main: com.github.neapovil.twofactor.TwoFactor
+version: 1.0.0
+api-version: 1.13
+author: Neapovil
+website: https://github.com/neapovil/twofactor
+depend:
+  - CommandAPI
+permissions:
+  twofactor.command:
+    default: op
+  twofactor.force:
+    default: op
