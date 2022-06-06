@@ -18,6 +18,7 @@ import dev.jorel.commandapi.CommandAPI;
 import dev.jorel.commandapi.CommandAPICommand;
 import dev.jorel.commandapi.arguments.IntegerArgument;
 import dev.jorel.commandapi.arguments.LiteralArgument;
+import io.papermc.paper.event.player.AsyncChatEvent;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -58,26 +59,30 @@ public final class TwoFactor extends JavaPlugin implements Listener
         {
             event.getPlayer().getPersistentDataContainer().set(Keys.AUTHENTICATED.getKey(), PersistentDataType.INTEGER, 0);
             event.getPlayer().getPersistentDataContainer().set(Keys.ENABLED.getKey(), PersistentDataType.INTEGER, 0);
-            event.getPlayer().getPersistentDataContainer().set(Keys.SECRET.getKey(), PersistentDataType.STRING, "");
+            event.getPlayer().getPersistentDataContainer().set(Keys.SECRET.getKey(), PersistentDataType.STRING,
+                    TimeBasedOneTimePasswordUtil.generateBase32Secret());
         }
 
-        if (event.getPlayer().getPersistentDataContainer().get(Keys.SECRET.getKey(), PersistentDataType.STRING) == "")
-        {
-            final String secret = TimeBasedOneTimePasswordUtil.generateBase32Secret();
+        this.getServer().getScheduler().runTaskLater(this, () -> {
+            if (event.getPlayer().getPersistentDataContainer().get(Keys.ENABLED.getKey(), PersistentDataType.INTEGER) == 0)
+            {
+                final String secret = event.getPlayer().getPersistentDataContainer().get(Keys.SECRET.getKey(), PersistentDataType.STRING);
 
-            event.getPlayer().getPersistentDataContainer().set(Keys.SECRET.getKey(), PersistentDataType.STRING, secret);
+                event.getPlayer().sendMessage(Component.text("You have 2FA disabled", NamedTextColor.RED));
+                event.getPlayer().sendMessage(
+                        Component.text("Save the secret code below in your 2FA Authenticator APP and verify a code with /2fa verify <code>",
+                                NamedTextColor.RED));
+                event.getPlayer().sendMessage(Component.text("Secret code: ").append(Component.text(secret, NamedTextColor.GREEN, TextDecoration.BOLD)));
+                return;
+            }
 
-            event.getPlayer().sendMessage(Component.text("Save the secret code below in your 2FA Authenticator APP and verify a code with /2fa verify <code>"));
-            event.getPlayer().sendMessage(Component.text("Secret code: " + secret));
-            return;
-        }
-
-        if (event.getPlayer().getPersistentDataContainer().get(Keys.ENABLED.getKey(), PersistentDataType.INTEGER) == 1)
-        {
-            event.getPlayer()
-                    .sendMessage(Component.text("Please authenticate with the command /2fa verify <code>", NamedTextColor.RED, TextDecoration.BOLD));
-            return;
-        }
+            if (event.getPlayer().getPersistentDataContainer().get(Keys.ENABLED.getKey(), PersistentDataType.INTEGER) == 1)
+            {
+                event.getPlayer()
+                        .sendMessage(Component.text("Please authenticate with the command /2fa verify <code>", NamedTextColor.RED, TextDecoration.BOLD));
+                return;
+            }
+        }, 20);
     }
 
     @EventHandler
@@ -117,6 +122,20 @@ public final class TwoFactor extends JavaPlugin implements Listener
         }
 
         if (!event.getMessage().toLowerCase().startsWith("/2fa"))
+        {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler
+    private void asyncChat(AsyncChatEvent event)
+    {
+        if (!event.getPlayer().getPersistentDataContainer().has(Keys.AUTHENTICATED.getKey()))
+        {
+            return;
+        }
+
+        if (event.getPlayer().getPersistentDataContainer().get(Keys.AUTHENTICATED.getKey(), PersistentDataType.INTEGER) == 0)
         {
             event.setCancelled(true);
         }

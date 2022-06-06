@@ -1,4 +1,4 @@
-name: AntiVPN
+name: TwoFactor
 main: com.github.neapovil.twofactor.TwoFactor
 version: 1.0.0
 api-version: 1.13

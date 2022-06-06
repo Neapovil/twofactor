@@ -3,7 +3,7 @@ plugins {
   id 'com.github.johnrengelman.shadow' version '7.0.0'
 }
 
-version = "1.18.1"
+version = '1.18.2-1.0.0'
 group = 'com.github.neapovil.twofactor'
 compileJava.options.encoding = 'UTF-8'
 
@@ -15,7 +15,7 @@ repositories {
 }
 
 dependencies {
-  compileOnly group: 'io.papermc.paper', name: 'paper-api', version: '1.18.1-R0.1-SNAPSHOT'
+  compileOnly group: 'io.papermc.paper', name: 'paper-api', version: '1.18.2-R0.1-SNAPSHOT'
   compileOnly group: 'dev.jorel', name: 'commandapi-core', version: '7.0.0'
   
   implementation group: 'com.j256.two-factor-auth', name: 'two-factor-auth', version: '1.3'
