@@ -6,6 +6,7 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
+import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
@@ -129,6 +130,20 @@ public final class TwoFactor extends JavaPlugin implements Listener
 
     @EventHandler
     private void asyncChat(AsyncChatEvent event)
+    {
+        if (!event.getPlayer().getPersistentDataContainer().has(Keys.AUTHENTICATED.getKey()))
+        {
+            return;
+        }
+
+        if (event.getPlayer().getPersistentDataContainer().get(Keys.AUTHENTICATED.getKey(), PersistentDataType.INTEGER) == 0)
+        {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler
+    private void playerDropItem(PlayerDropItemEvent event)
     {
         if (!event.getPlayer().getPersistentDataContainer().has(Keys.AUTHENTICATED.getKey()))
         {
